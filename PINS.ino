@@ -5,10 +5,10 @@ extern const int lcdP3       = 10;
 extern const int lcdP4       = 11;
 extern const int lcdP5       = 12;
 extern const int lcdP6       = 13;
-extern const int buttonRight = 19;     
+extern const int buttonRight = 59;     
 extern const int buttonLeft  = 3;    
 extern const int buttonUp    = 2;    
-extern const int buttonDown  = 18;    
+extern const int buttonDown  = 58;    
 extern const int alarm       = 4;    
 
 void setupPins()

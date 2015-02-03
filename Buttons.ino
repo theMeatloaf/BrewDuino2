@@ -180,7 +180,7 @@ int ButtonloopRepeate()
     //Serial.print("Value Output!");
     return curButtValue; 
    }
-   if(holdCounter>150 && (curButtValue == 1 || curButtValue == 2))
+   if(holdCounter>75 && (curButtValue == 1 || curButtValue == 2))
    {
     return curButtValue; 
    }
@@ -201,5 +201,3 @@ void turnOffMultiHold()
 {
  numOfReturn = 1;  
 }
-
-

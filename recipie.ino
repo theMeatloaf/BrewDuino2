@@ -7,7 +7,7 @@
 //static counters and flags;
 static unsigned int strikeHoldCounter = 0;
 static int currentHopStep = 1;
-static int lastDismissedHopStep = 0;
+static int lastDismissedAlarmCount = 0;
 static int currentMashStep = 0;
 static boolean waitFlag = false;
 static int lastSeco = 0;
@@ -233,14 +233,19 @@ unsigned int hopInterval(int i)
  return curRecipie.hopAdditionIntervals[i]; 
 }
 
-void dismissHopAlarm()
+void dismissOneAlarm()
 {
- lastDismissedHopStep++; 
+ lastDismissedAlarmCount++; 
 }
 
-int getLastDismissedHopStep()
+void resetAlarmCount()
 {
- return lastDismissedHopStep; 
+ lastDismissedAlarmCount = 0; 
+}
+
+int getLastDismissedAlarmCount()
+{
+ return lastDismissedAlarmCount; 
 }
 
 boolean incrementHopCounterIfShould()

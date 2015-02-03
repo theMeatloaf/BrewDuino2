@@ -37,6 +37,13 @@ void PIDLoop(double temp,int pin,int vessel) {
   
    float fTemp = getTempF(getTempNew(vessel));   
 
+   if(!tempIsValid(fTemp))
+   {
+     //safety in case temp sensor is malfunctioning or isnt plugged in...
+      digitalWrite(pin,LOW);
+      return;
+   }
+
     total= total - readings[index]; 
     float temperature = fTemp;
     readings[index] = temperature;
@@ -52,22 +59,22 @@ void PIDLoop(double temp,int pin,int vessel) {
     // calculate the average:
     Input = total / numReadings; 
 
-   myPID.Compute();
+    myPID.Compute();
   
-  unsigned long now = millis();
-  if(now - windowStartTime>WindowSize)
-  { 
-    //time to shift the Relay Window
-    windowStartTime += WindowSize;
-  }
-  if(Output > now - windowStartTime)
- { 
-   digitalWrite(pin,HIGH);
- }
-  else 
-  {
-    digitalWrite(pin,LOW);
-  }
+    unsigned long now = millis();
+    if(now - windowStartTime>WindowSize)
+    { 
+      //time to shift the Relay Window
+      windowStartTime += WindowSize;
+    }
+    if(Output > now - windowStartTime)
+    { 
+      digitalWrite(pin,HIGH);
+    }
+    else 
+    {
+      digitalWrite(pin,LOW);
+    }
 }
 
 double getHoldTemp()
@@ -75,6 +82,13 @@ double getHoldTemp()
    return holdTemp;
 }
 
+boolean tempIsValid(double temp )
+{
+  if(temp < 32 || temp > 300 )
+   return false; 
+  else
+   return true;    
+}
 
 void tempControllerPrint()
 {

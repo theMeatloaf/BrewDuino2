@@ -22,20 +22,27 @@ unsigned int last = 0;//counter for display
 void setup() {
   Serial.begin(9600);
   setupPins();
-  
-  startTempControl();  
-    
   setupLCD();
+  startTempControl();
+    
+  //init input Screens
+  populateScreenVars();
+
+  //boot up screen display
   displayBootScreen();
-  setupTestRecipie();
-  SetupHoldTemp(outlet1,getCurrentMashTemp(),4294967294);
-}
-
-
-int freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  
+  turnOnMultiHold();
+  while(!readyToBrew)
+  {
+    //say in here unless its really ready to brew!
+    inputRecipieLoop();
+  }
+  turnOffMultiHold();
+  
+  displayRecipieDebug();
+      
+  //start Brew
+  changeScreens();
 }
 
 void loop() {
@@ -48,13 +55,12 @@ void loop() {
   {
    //need to shutdown!
    turnAlarmOn();
-   delay(500);
+   delay(2000);
    turnAlarmOff();
    brewStage = emergencyShutoff;
    last = 0;
   }
   
-  Serial.println(freeRam());
   //check for input here and change display case acordingly...also check for emergency
   int ButtonValue = Buttonloop();
   if(ButtonValue==3 || ButtonValue==4)
@@ -153,6 +159,9 @@ void emergencyShutdownCase()
 //*********STRIKE CASE BEGINS HERE*********//
 void strikeCase()
 {
+  //setup if just got here
+  if(getHoldTemp() != getCurrentMashTemp())SetupHoldTemp(outlet1,getCurrentMashTemp(),4294967294);
+  
   HoldTempDone(HLTTemp);
   if(strikeHoldEndTime() > 0)
   {
@@ -161,6 +170,9 @@ void strikeCase()
        //been holding long enough...lets sound alarm and setup next temp
        soundAlarm(true,wort,"Strike Temp Reached!");
      } 
+  }else if((getTempF(getTempNew(HLTTemp)) > (getHoldTemp()-10)) && getLastDismissedAlarmCount()==0 )
+  {
+      soundAlarm(true,strike,"Turn Off Stove!");
   }else if(getTempF(getTempNew(HLTTemp)) > getHoldTemp())
   {
         setupStrikeHoldTime(STRIKE_HOLD_TIME); //lets wait for some Time for good measure 
@@ -170,7 +182,12 @@ void strikeCase()
 //***************WORT CASE BEGINS HERE**************//
 void wortCase()
 {   
-      if(getHoldTemp() != wortGoalTemp())SetupHoldTemp(outlet1,wortGoalTemp(),wortTotalTime());//setup wort stuff if Just got here
+      if(getHoldTemp() != wortGoalTemp())
+      {
+        //setup wort stuff if Just got here
+        SetupHoldTemp(outlet1,wortGoalTemp(),wortTotalTime());
+        resetAlarmCount();
+      }
   
       if(getTempF(getTempNew(HLTTemp)) < getHoldTemp()-3)
       {
@@ -188,9 +205,9 @@ void wortCase()
           {
     
           }
-          if     (hopInterval(0)<=getElapsed() && totalHopsSteps()>0 && getLastDismissedHopStep()<1){soundAlarm(true, wort,"Pour in Hops 1");}
-          else if(hopInterval(1)<=getElapsed() && totalHopsSteps()>1 && getLastDismissedHopStep()<2){soundAlarm(true, wort,"Pour in Hops 2");}
-          else if(hopInterval(2)<=getElapsed() && totalHopsSteps()>2 && getLastDismissedHopStep()<3){soundAlarm(true, wort,"Pour in Hops 3");}
+          if     (hopInterval(0)<=getElapsed() && totalHopsSteps()>0 && getLastDismissedAlarmCount()<1){soundAlarm(true, wort,"Pour in Hops 1");}
+          else if(hopInterval(1)<=getElapsed() && totalHopsSteps()>1 && getLastDismissedAlarmCount()<2){soundAlarm(true, wort,"Pour in Hops 2");}
+          else if(hopInterval(2)<=getElapsed() && totalHopsSteps()>2 && getLastDismissedAlarmCount()<3){soundAlarm(true, wort,"Pour in Hops 3");}
       }
       
 
@@ -207,8 +224,7 @@ void soundAlarm(boolean tempHold, int nextCase, char message[ ])
    if(ButtonValue != -1)
    {
       //do Case Based Increases...
-      if(currentBrewStage() == wort)dismissHopAlarm(); 
-     
+      if(currentBrewStage() == nextCase)dismissOneAlarm();
       changeScreens();
       turnAlarmOff();
       brewStage = nextCase;

@@ -1,6 +1,11 @@
+/*
+  To Future Ryan: I've tagged things that need to be turned on for phase 2 by '#phase2' alrighty there big guy have a good one.
+*/
+
+
 #define maxScreenValues 18
 #define sizeOfRecipieMem 142
-#define numberOfSavedSlots 2
+#define numberOfSavedSlots 28
 
 #define loadOrNewInputScreen 14
 #define savedListPickingScreen 15
@@ -30,7 +35,7 @@
 #define NUM_OF_SAVED_NAME_INPUTS 18
 
 
-#define FLASH_MILLIS 400
+#define FLASH_MILLIS 450
 
 extern boolean readyToBrew;
 
@@ -165,7 +170,7 @@ void populateScreenVars()
     strikeScreen.varWidths[i] = strikeVarWidths[i];
     strikeScreen.floatVars[i] = strikeVarFloatVars[i];
   }
-  /*
+  
   spargeQuestScreen.id = spargeQuestionScreen;
   for(i=0; i<NUM_OF_SPARGE_INPUTS; i++)
   {
@@ -234,7 +239,7 @@ void populateScreenVars()
 
 
   //initialize currentScreen
-  currentScreen = loadOrNewScreen;*/
+  currentScreen = loadOrNewScreen;
 }
 
 
@@ -378,7 +383,7 @@ void printCurInputScreen()
            lcd.print(tempMashTemp);
            lcd.setCursor(0,2);
            lcd.print("Ammount:");
-           lcd.print(tempMashAmmount);
+           lcd.print("N/A"); //#phase2: make sure this is working and ish
            lcd.setCursor(0,3);
            lcd.print("DONE?");
            break;
@@ -708,6 +713,29 @@ void screenDone()
     
    case strikeInputScreen:
    {
+        //#phase2: This will need to do what it does below, but for now were just skipping straight to the boil screen YOLO
+          //also hard code these values to make sure no mash weirdness gets implemented and the temp gets assigned
+          inputRecipie.numberOfMashSteps = 1;
+          inputRecipie.mashTemps[0] = tempMashTemp;
+        
+          //this coppies form spargeQuestionScreen
+            //go to Wort Screen....fill in times, temps, and hop times if they are there
+            tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
+            tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
+            tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
+            tempWortTemp = inputRecipie.wortTemp;
+            for(i=0; i<3; i++)
+            {
+              hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
+              hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
+              hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
+            }
+
+            currentScreen = wortScreen;
+            lcd.clear();
+            curEdit = 0;
+            break;
+     
        //go to Mash screen
        inputRecipie.mashTemps[0] = tempMashTemp;
        inputRecipie.mashAmmounts[0] = tempMashAmmount;
@@ -1003,6 +1031,15 @@ void screenBack()
    
    case wortInputScreen:
    {
+     //#phase2: gotta take this out and make sure it goes back to the mash screen its used to
+       tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
+       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
+       curEdit = 0;
+       lcd.clear();
+       currentScreen = strikeScreen;
+       break;
+     
+     
     if(tempHasSparge)
     {
       //go Back To Sparge info Screen
