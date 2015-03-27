@@ -163,6 +163,8 @@ void strikeCase()
   if(getHoldTemp() != getCurrentMashTemp())SetupHoldTemp(outlet1,getCurrentMashTemp(),4294967294);
   
   HoldTempDone(HLTTemp);
+
+  //have we reached it and are just holding temp?
   if(strikeHoldEndTime() > 0)
   {
      if(getElapsed() > strikeHoldEndTime())
@@ -191,10 +193,17 @@ void wortCase()
   
       if(getTempF(getTempNew(HLTTemp)) < getHoldTemp()-3)
       {
+       //check if its getting close so we can tell the user to pour in extract/turn off stove
+       if(getTempF(getTempNew(HLTTemp)) > getHoldTemp()-10 && getLastDismissedAlarmCount()<1)
+       {
+        soundAlarm(true,wort,"Turn Off Stove/Pour In Excract"); 
+       }
+        
        // keep trying to hold temp and dont do anything else
        forceHoldTemp(HLTTemp);
        return;
-      }else if(HoldTempDone(HLTTemp))
+      }
+      else if(HoldTempDone(HLTTemp))
       {
        turnHeaterOff();
        soundAlarm(false, complete,"Brewing Complete!");////need to end here
@@ -205,9 +214,9 @@ void wortCase()
           {
     
           }
-          if     (hopInterval(0)<=getElapsed() && totalHopsSteps()>0 && getLastDismissedAlarmCount()<1){soundAlarm(true, wort,"Pour in Hops 1");}
-          else if(hopInterval(1)<=getElapsed() && totalHopsSteps()>1 && getLastDismissedAlarmCount()<2){soundAlarm(true, wort,"Pour in Hops 2");}
-          else if(hopInterval(2)<=getElapsed() && totalHopsSteps()>2 && getLastDismissedAlarmCount()<3){soundAlarm(true, wort,"Pour in Hops 3");}
+          if     (hopInterval(0)<=getElapsed() && totalHopsSteps()>0 && getLastDismissedAlarmCount()<2){soundAlarm(true, wort,"Pour in Hops 1");}
+          else if(hopInterval(1)<=getElapsed() && totalHopsSteps()>1 && getLastDismissedAlarmCount()<3){soundAlarm(true, wort,"Pour in Hops 2");}
+          else if(hopInterval(2)<=getElapsed() && totalHopsSteps()>2 && getLastDismissedAlarmCount()<4){soundAlarm(true, wort,"Pour in Hops 3");}
       }
       
 
