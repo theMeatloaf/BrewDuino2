@@ -194,7 +194,7 @@ void wortCase()
       if(getTempF(getTempNew(HLTTemp)) < getHoldTemp()-3)
       {
        //check if its getting close so we can tell the user to pour in extract/turn off stove
-       if(getTempF(getTempNew(HLTTemp)) > getHoldTemp()-10 && getLastDismissedAlarmCount()<1)
+       if(getTempF(getTempNew(HLTTemp)) > getHoldTemp()-5 && getLastDismissedAlarmCount()<1)
        {
         soundAlarm(true,wort,"Turn Off Stove/Pour In Excract"); 
        }
