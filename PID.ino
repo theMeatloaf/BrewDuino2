@@ -8,7 +8,7 @@ double total = 0; // the running total
 double input = 0; // the average
 
 //Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &holdTemp,50,25,0, DIRECT);
+PID myPID(&Input, &Output, &holdTemp,40,10,1, DIRECT);
 
 //size for Duty Cycle
 int WindowSize = 2000;
