@@ -10,10 +10,7 @@
 #define loadOrNewInputScreen 14
 #define savedListPickingScreen 15
 #define mashInputScreen 7
-#define spargeQuestionScreen 8
-#define wortInputScreen 9
 #define strikeInputScreen 10
-#define spargeDataInputScreen 11
 #define wortInputScreen 12
 #define saveStartQuestionScreen 13
 #define saveNameInputScreen 16
@@ -25,8 +22,7 @@
 #define doneVar 6
 #define leterVar 7
 
-#define NUM_OF_MASH_INPUTS 8
-#define NUM_OF_SPARGE_INPUTS 2
+#define NUM_OF_MASH_INPUTS 7
 #define NUM_OF_STRIKE_INPUTS 3
 #define NUM_OF_WORT_INPUTS 14
 #define NUM_OF_SAVE_START_INPUTS 2
@@ -50,9 +46,9 @@ static recipie inputRecipie;
 //recipie temp vars
 static int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
-static float tempMashTemp,tempMashAmmount;
+static float tempMashTemp;
 static float tempWortTemp = 200;
-static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave, tempLoadOrNew, isCurSaving;
+static boolean tempMashPumpOn,tempMoreMashSteps, tempSave, tempLoadOrNew, isCurSaving;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
 static char tempName[18] = "                 ";
 
@@ -84,32 +80,25 @@ static int curDisplayedMashStep = 0;
 static int curCharSelection = 0;
 
 //screen defs
-screen mashScreen,strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen, saveNameScreen;
+screen mashScreen,strikeScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen, saveNameScreen;
 
 //mash screen hardcoded vars
-int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,15,6,10};
-int mashCollumnLocations[NUM_OF_MASH_INPUTS] = {0,1,1,1,2,2,3,3};
-int mashVarTypes[NUM_OF_MASH_INPUTS] = {floatVar,integerVar,integerVar,integerVar,on_offVar,floatVar,yes_noVar,doneVar};
-int mashVarWidths[NUM_OF_MASH_INPUTS] = {6,2,2,2,3,5,3,5};
-float * mashVarFloatVars[NUM_OF_MASH_INPUTS] = {&tempMashTemp,0,0,0,0,&tempMashAmmount,0,0};
-int * mashVarIntVars[NUM_OF_MASH_INPUTS] = {0, &tempMashHours,&tempMashMins,&tempMashSecs,0,0,0,0};
-boolean * mashOnOffVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,&tempMashMotorOn,0,0,0};
-boolean * mashYesNoVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,0,0,&tempMoreMashSteps,0};
+int mashRowLocations[NUM_OF_MASH_INPUTS] = {14,5,8,11,5,6,10};
+int mashCollumnLocations[NUM_OF_MASH_INPUTS] = {0,1,1,1,2,3,3};
+int mashVarTypes[NUM_OF_MASH_INPUTS] = {floatVar,integerVar,integerVar,integerVar,on_offVar,yes_noVar,doneVar};
+int mashVarWidths[NUM_OF_MASH_INPUTS] = {6,2,2,2,3,3,5};
+float * mashVarFloatVars[NUM_OF_MASH_INPUTS] = {&tempMashTemp,0,0,0,0,0,0};
+int * mashVarIntVars[NUM_OF_MASH_INPUTS] = {0, &tempMashHours,&tempMashMins,&tempMashSecs,0,0,0};
+boolean * mashOnOffVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,&tempMashPumpOn,0,0};
+boolean * mashYesNoVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,0,&tempMoreMashSteps,0};
 
 //strike screen hardcoded vars
-int strikeRowLocations[NUM_OF_STRIKE_INPUTS] = {5,8,0};
+int strikeRowLocations[NUM_OF_STRIKE_INPUTS] = {5,5,0};
 int strikeCollumnLocations[NUM_OF_STRIKE_INPUTS] = {1,2,3};
-int strikeVarTypes[NUM_OF_STRIKE_INPUTS] = {floatVar,floatVar,doneVar};
-int strikeVarWidths[NUM_OF_STRIKE_INPUTS] = {6,6,5};
-float * strikeVarFloatVars[NUM_OF_STRIKE_INPUTS] = {&tempMashTemp,&tempMashAmmount,0};
-
-
-//sparge Q screen vars
-int spargeRowsLocations[NUM_OF_SPARGE_INPUTS] = {8, 7};
-int spargeCollumnLocations[NUM_OF_SPARGE_INPUTS] = {2,3};
-int spargeVarTypes[NUM_OF_SPARGE_INPUTS] = {yes_noVar,doneVar};
-boolean * spargeYesNoVars[NUM_OF_SPARGE_INPUTS] = {&tempHasSparge, 0};
-int spargeVarWidths[NUM_OF_SPARGE_INPUTS] = {3,5};
+int strikeVarTypes[NUM_OF_STRIKE_INPUTS] = {floatVar,on_offVar,doneVar};
+int strikeVarWidths[NUM_OF_STRIKE_INPUTS] = {6,3,5};
+float * strikeVarFloatVars[NUM_OF_STRIKE_INPUTS] = {&tempMashTemp,0,0};
+boolean * strikeOnOffVars[NUM_OF_STRIKE_INPUTS] = {0,&tempMashPumpOn,0};
 
 //wort screenvars
 int wortRowsLocations[NUM_OF_WORT_INPUTS] = {5,12,15,18,5,8,11,5,8,11,5,8,11,14};
@@ -156,29 +145,14 @@ void populateScreenVars()
   }
   
   strikeScreen.id = strikeInputScreen; 
-  spargeDataScreen.id = spargeDataInputScreen;
   for(i=0; i<NUM_OF_STRIKE_INPUTS; i++)
   {
-    spargeDataScreen.locationRows[i] = strikeRowLocations[i];
-    spargeDataScreen.locationCollums[i] = strikeCollumnLocations[i];
-    spargeDataScreen.varTypes[i] = strikeVarTypes[i];
-    spargeDataScreen.varWidths[i] = strikeVarWidths[i];
-    spargeDataScreen.floatVars[i] = strikeVarFloatVars[i];
     strikeScreen.locationRows[i] = strikeRowLocations[i];
     strikeScreen.locationCollums[i] = strikeCollumnLocations[i];
     strikeScreen.varTypes[i] = strikeVarTypes[i];
     strikeScreen.varWidths[i] = strikeVarWidths[i];
     strikeScreen.floatVars[i] = strikeVarFloatVars[i];
-  }
-  
-  spargeQuestScreen.id = spargeQuestionScreen;
-  for(i=0; i<NUM_OF_SPARGE_INPUTS; i++)
-  {
-    spargeQuestScreen.locationRows[i] = spargeRowsLocations[i];
-    spargeQuestScreen.locationCollums[i] = spargeCollumnLocations[i];
-    spargeQuestScreen.varTypes[i] = spargeVarTypes[i];
-    spargeQuestScreen.yesNoVars[i] = spargeYesNoVars[i];
-    spargeQuestScreen.varWidths[i] = spargeVarWidths[i];
+    strikeScreen.onOffVars[i] = strikeOnOffVars[i];
   }
 
   wortScreen.id = wortInputScreen;
@@ -247,7 +221,7 @@ static boolean flashFlag = false;
 
 void inputRecipieLoop()
 {
-  int ButtonValue = ButtonloopRepeate();
+  int ButtonValue = Buttonloop(true,true);
   if(ButtonValue != -1)
   {
     //code to refresh screen quickly
@@ -326,23 +300,11 @@ void printCurInputScreen()
         case mashInputScreen:
         {
            lcd.setCursor(0,0);
-           lcd.print("#");
+           lcd.print("Mash #");
            if(curDisplayedMashStep < 10)lcd.print("0");
            lcd.print(curDisplayedMashStep);
-           if(tempMoreMashSteps)
-           {
-               lcd.print(" Temp:");
-               lcd.print(tempMashTemp);
-           }else
-           {
-               //make it not appear
-               if(curEdit==0)
-               {
-                curEdit++; 
-               }
-               lcd.print("            ");
-           }
-
+           lcd.print(" Temp:");
+           lcd.print(tempMashTemp);
            lcd.setCursor(0,1);
            lcd.print("TIME:");
            if(tempMashHours<10)lcd.print("0");
@@ -354,18 +316,9 @@ void printCurInputScreen()
            if(tempMashSecs<10)lcd.print("0");
            lcd.print(tempMashSecs);
            lcd.setCursor(0,2);
-           lcd.print("Motor:");
-           if(tempMashMotorOn)lcd.print("ON  ");
+           lcd.print("Pump:");
+           if(tempMashPumpOn)lcd.print("ON  ");
            else lcd.print("OFF ");
-           if(tempMoreMashSteps)
-           {
-              lcd.print("Amnt:");
-              lcd.print(tempMashAmmount);
-           }else
-           { 
-              //make it not appear
-              lcd.print("          ");
-           }
            
            lcd.setCursor(0,3);
            lcd.print("More?:");
@@ -382,36 +335,11 @@ void printCurInputScreen()
            lcd.print("TEMP:");
            lcd.print(tempMashTemp);
            lcd.setCursor(0,2);
-           lcd.print("Ammount:");
-           lcd.print("N/A"); //#phase2: make sure this is working and ish
+           lcd.print("Pump:");
+           lcd.print(tempMashPumpOn ? "YES" : "NO ");
            lcd.setCursor(0,3);
            lcd.print("DONE?");
            break;
-         }
-         case spargeQuestionScreen:
-         {
-           lcd.setCursor(6,0);
-           lcd.print("SPARGE?");
-           lcd.setCursor(8,2);
-           if(tempHasSparge)lcd.print("YES");
-           else lcd.print("NO");
-           lcd.setCursor(7,3);
-           lcd.print("DONE?");
-           break;
-         }
-         case spargeDataInputScreen:
-         {
-           lcd.setCursor(6,0);
-           lcd.print("SPARGE:");
-           lcd.setCursor(0,1);
-           lcd.print("TEMP:");
-           lcd.print(tempMashTemp);
-           lcd.setCursor(0,2);
-           lcd.print("Ammount:");
-           lcd.print(tempMashAmmount);
-           lcd.setCursor(0,3);
-           lcd.print("DONE?");
-           break; 
          }
          case wortInputScreen:
          { 
@@ -553,12 +481,6 @@ void moveSelectionRight()
     }
    
   curEdit++;
-  
-  //custom skip logic
-  if(curEdit==5 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
-  {
-     curEdit++; 
-  } 
 }
 
 void moveSelectionLeft()
@@ -569,16 +491,6 @@ void moveSelectionLeft()
     return;
   }
   curEdit--;
-  
-  //custom skip logic
-  if(curEdit==5 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
-  {
-     curEdit--; 
-  }
-  if(curEdit==0 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
-  {
-    screenBack(); 
-  }
 }
 
 void increaseSelection()
@@ -608,7 +520,6 @@ void increaseSelection()
             curEdit = 0;
             //set values on strike screen
             tempMashTemp = inputRecipie.mashTemps[0];
-            tempMashAmmount = inputRecipie.mashAmmounts[0];
            }
           return;
        }
@@ -703,7 +614,6 @@ void screenDone()
        //start new blank recipie
        inputRecipie = emptyRecipie();
        tempMashTemp = inputRecipie.mashTemps[0];
-       tempMashAmmount = inputRecipie.mashAmmounts[0];
        curEdit = 0;
        lcd.clear();
        currentScreen = strikeScreen; 
@@ -713,33 +623,9 @@ void screenDone()
     
    case strikeInputScreen:
    {
-        //#phase2: This will need to do what it does below, but for now were just skipping straight to the boil screen YOLO
-          //also hard code these values to make sure no mash weirdness gets implemented and the temp gets assigned
-          inputRecipie.numberOfMashSteps = 1;
-          inputRecipie.mashTemps[0] = tempMashTemp;
-        
-          //this coppies form spargeQuestionScreen
-            //go to Wort Screen....fill in times, temps, and hop times if they are there
-            tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
-            tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
-            tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
-            tempWortTemp = inputRecipie.wortTemp;
-            for(i=0; i<3; i++)
-            {
-              hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
-              hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
-              hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
-            }
-
-            currentScreen = wortScreen;
-            lcd.clear();
-            curEdit = 0;
-            break;
-     
        //go to Mash screen
        inputRecipie.mashTemps[0] = tempMashTemp;
-       inputRecipie.mashAmmounts[0] = tempMashAmmount;
-       inputRecipie.mashMotorStates[0] = false;
+       inputRecipie.mashPumpStates[0] = false;
        inputRecipie.mashTimes[0] = 65534;//max Time
        if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
        curDisplayedMashStep++;
@@ -748,10 +634,9 @@ void screenDone()
        tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
        tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
        tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
-       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-       tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
+       tempMashPumpOn = inputRecipie.mashPumpStates[curDisplayedMashStep];
        currentScreen = mashScreen;
-       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep && !loadedRecipieHasSparge())tempMoreMashSteps = true;
+       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep)tempMoreMashSteps = true;
        lcd.clear();
        break;
    }
@@ -759,8 +644,7 @@ void screenDone()
    {
       //store current Vars
       inputRecipie.mashTemps[curDisplayedMashStep] = tempMashTemp;
-      inputRecipie.mashAmmounts[curDisplayedMashStep] = tempMashAmmount;
-      inputRecipie.mashMotorStates[curDisplayedMashStep] = tempMashMotorOn;
+      inputRecipie.mashPumpStates[curDisplayedMashStep] = tempMashPumpOn;
       inputRecipie.mashTimes[curDisplayedMashStep] = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
       curEdit = 0;
       lcd.clear();
@@ -771,22 +655,16 @@ void screenDone()
              //fill temp vars if they already exist
              curDisplayedMashStep++;
              tempMashTemp =  inputRecipie.mashTemps[curDisplayedMashStep];
-             tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-             tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
+             tempMashPumpOn = inputRecipie.mashPumpStates[curDisplayedMashStep];
              tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
-             if(curDisplayedMashStep == inputRecipie.numberOfMashSteps-1)
+             if(curDisplayedMashStep == inputRecipie.numberOfMashSteps)
              {
               tempMoreMashSteps = false; 
-             }else tempMoreMashSteps = true;
-             //check for if current recipie has sparge conditions from loading....
-         /*    if(loadedRecipieHasSparge())
-             {
-               tempMoreMashSteps = false;
-               tempHasSparge = true;
+             }else {
+              tempMoreMashSteps = true;
              }
-             else tempMoreMashSteps = true;*/
              return;
           }else
           {
@@ -797,94 +675,32 @@ void screenDone()
              inputRecipie.numberOfMashSteps++;
          
              tempMashTemp = 0;
-             tempMashAmmount = 0;
-             tempMashMotorOn = false;
+             tempMashPumpOn = false;
              tempMashHours = 0;
              tempMashMins = 0;
              tempMashSecs = 0; 
           }
        }else
        {
-         //go to spargeQuestion screen
-         tempMoreMashSteps = false;
-         tempMashAmmount = 0;
-         tempMashTemp = 0;
-         if(loadedRecipieHasSparge())tempHasSparge=true;
-         else tempHasSparge = false;
-//////////////////////////         inputRecipie.numberOfMashSteps = curDisplayedMashStep;
-         currentScreen = spargeQuestScreen;
-         return;
+          //go to wort screen
+          tempMoreMashSteps = false;
+          //go to Wort Screen....fill in times, temps, and hop times if they are there
+          tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
+          tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
+          tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
+          tempWortTemp = inputRecipie.wortTemp;
+          for(i=0; i<3; i++)
+          {
+            hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
+            hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
+            hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
+          }
+    
+          currentScreen = wortScreen;
+          lcd.clear();
+          curEdit = 0;
        }
        break;
-    }
-    case spargeQuestionScreen:
-    {       
-       if(tempHasSparge)
-       {
-        if(loadedRecipieHasSparge())
-        {
-           tempMashTemp = inputRecipie.mashTemps[inputRecipie.numberOfMashSteps];
-           tempMashAmmount = inputRecipie.mashAmmounts[inputRecipie.numberOfMashSteps]; 
-        }
-        lcd.clear();
-        curEdit = 0;
-        currentScreen = spargeDataScreen; 
-       }else
-       {         
-        //go to Wort Screen and save last mash step and create zero time sparge
-        curDisplayedMashStep++;
-        inputRecipie.numberOfMashSteps = curDisplayedMashStep;
-        inputRecipie.mashTemps[curDisplayedMashStep] = 0;//turn off heater....
-        inputRecipie.mashTemps[curDisplayedMashStep-1] = 0;
-        inputRecipie.mashMotorStates[curDisplayedMashStep-1] = tempMashMotorOn;//motor state
-        inputRecipie.mashMotorStates[curDisplayedMashStep] = false; //turn off during non sparge
-        inputRecipie.mashTimes[curDisplayedMashStep-1] = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
-        inputRecipie.mashTimes[curDisplayedMashStep] = 0;
-        inputRecipie.mashAmmounts[curDisplayedMashStep] = 0;//to be sure it clears out sparge if its there
-
-        //go to Wort Screen....fill in times, temps, and hop times if they are there
-        tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
-        tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
-        tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
-        tempWortTemp = inputRecipie.wortTemp;
-        for(i=0; i<3; i++)
-        {
-          hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
-          hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
-          hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
-        }
-
-        currentScreen = wortScreen;
-        lcd.clear();
-        curEdit = 0;
-       }
-       break; 
-    }
-    
-    case spargeDataInputScreen:
-    {
-      curDisplayedMashStep++;
-      inputRecipie.numberOfMashSteps = curDisplayedMashStep;
-      inputRecipie.mashTemps[curDisplayedMashStep-1] = tempMashTemp;//hold sparge temp during last mash time...
-      inputRecipie.mashTemps[curDisplayedMashStep] = tempMashTemp;
-      inputRecipie.mashAmmounts[curDisplayedMashStep] = tempMashAmmount;
-      inputRecipie.mashMotorStates[curDisplayedMashStep] = false;
-      inputRecipie.mashTimes[curDisplayedMashStep] = 0;
-      //go to Wort Screen.................fill in times, temps, and hop times if they are there
-      tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
-      tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
-      tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
-      tempWortTemp = inputRecipie.wortTemp;
-      for(i=0; i<3; i++)
-      {
-        hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
-        hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
-        hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
-      }
-      currentScreen = wortScreen;
-      lcd.clear();
-      curEdit = 0;
-      break;
     }
     
     case wortInputScreen:
@@ -981,8 +797,7 @@ void screenBack()
          //go back and fill temp vars
         curDisplayedMashStep--;
         tempMashTemp =  inputRecipie.mashTemps[curDisplayedMashStep];
-        tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-        tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
+        tempMashPumpOn = inputRecipie.mashPumpStates[curDisplayedMashStep];
         tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
         tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
         tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
@@ -993,7 +808,6 @@ void screenBack()
        //go To strike
        curDisplayedMashStep--;
        tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
-       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
        curEdit = 0;
        lcd.clear();
        currentScreen = strikeScreen;
@@ -1001,62 +815,18 @@ void screenBack()
        break; 
    }
    
-   case spargeQuestionScreen:
+   case wortInputScreen:
    {
-       //go back to Mash and handle loss of sparge if necessary
-        if(inputRecipie.mashTemps[curDisplayedMashStep]==0 && inputRecipie.mashTemps[curDisplayedMashStep-1]==0)
-        {
-        curDisplayedMashStep--;
-        }
+        //go back to Mash
         currentScreen = mashScreen;
         tempMashTemp =  inputRecipie.mashTemps[curDisplayedMashStep];
-        tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-        tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
+        tempMashPumpOn = inputRecipie.mashPumpStates[curDisplayedMashStep];
         tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
         tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
         tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
         lcd.clear();
         tempMoreMashSteps = false; 
         break;
-   }
-   
-   case spargeDataInputScreen:
-   {
-     //go Back to Sparge Question Screen
-     currentScreen = spargeQuestScreen;
-     lcd.clear();
-     curEdit = 0;
-    break; 
-   }
-   
-   case wortInputScreen:
-   {
-     //#phase2: gotta take this out and make sure it goes back to the mash screen its used to
-       tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
-       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-       curEdit = 0;
-       lcd.clear();
-       currentScreen = strikeScreen;
-       break;
-     
-     
-    if(tempHasSparge)
-    {
-      //go Back To Sparge info Screen
-      tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
-      tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
-      curDisplayedMashStep--;
-      currentScreen = spargeDataScreen;
-      lcd.clear();
-      curEdit = 0;
-    }else
-    {
-     //go Back to Sparge Question Screen
-     currentScreen = spargeQuestScreen;
-     lcd.clear();
-     curEdit = 0;
-    }
-    break; 
    }
    
    case saveStartQuestionScreen:
@@ -1069,15 +839,4 @@ void screenBack()
    }
    
   } 
-}
-
-
-boolean loadedRecipieHasSparge()
-{  
-    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[inputRecipie.numberOfMashSteps] ==  inputRecipie.mashTemps[inputRecipie.numberOfMashSteps-1] 
-    && inputRecipie.mashTemps[inputRecipie.numberOfMashSteps]!=0))
-     {
-       return true;
-     }
-    return false;
 }

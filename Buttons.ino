@@ -84,8 +84,17 @@ boolean emergencyShutdown()
    return false;
 }
 
+
+
+bool ButtonLoopLongPress(int buttonID) {
+  if (Buttonloop(true,false) == buttonID && holdCounter>150) {
+    return true;
+  }
+  return false;
+}
+
 //check each for debounce and be able to return which one....have flag for 2 or more etc....
-int Buttonloop() {
+int ButtonloopRaw() {  
   // read the state of the switch into a local variable:
   int readingRight = digitalRead(buttonRight);
   int readingLeft = digitalRead(buttonLeft);
@@ -169,35 +178,38 @@ int Buttonloop() {
   return -1;
 }
 
-int ButtonloopRepeate()
+int Buttonloop(bool repeat,bool recipie)
 {
- int curButtValue = Buttonloop();
- if (curButtValue != -1)
- {   
+  numOfReturn = repeat ? 32766 : 1;
+  int curButtValue = ButtonloopRaw();
+
+  //just return the buttonLoop val here since theres no repeat logic
+  if (repeat == false) {
+    return curButtValue;
+  }
+
+  //wait for it to reach 75 count before returning values
+  if (curButtValue != -1)
+  {   
    holdCounter++;
    if(holdCounter == 1)
    {
     //Serial.print("Value Output!");
     return curButtValue; 
    }
-   if(holdCounter>75 && (curButtValue == 1 || curButtValue == 2))
+   if(holdCounter>75)
    {
-    return curButtValue; 
+    if (!recipie)
+    {
+      return curButtValue;
+    } else {
+      return (curButtValue == 1 || curButtValue == 2) ? curButtValue : -1;
+    }
    }
- }else
- {
+  }else
+  {
   holdCounter = 0; 
- }
- 
- return -1;
-}
-
-void turnOnMultiHold()
-{
- numOfReturn = 32766;  
-}
-
-void turnOffMultiHold()
-{
- numOfReturn = 1;  
+  }
+  
+  return -1;
 }

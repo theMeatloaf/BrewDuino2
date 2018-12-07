@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 
 extern const int lcdP1,lcdP2,lcdP3,lcdP4,lcdP5,lcdP6;
-extern const int outlet1, HLTTemp, mash, wort, strike, sparge, mashout, emergencyShutoff;
+extern const int outlet1, HLTTemp, mash, wort, strike, mashout, emergencyShutoff;
 
 LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
  
@@ -44,7 +44,6 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    
    lcd.clear(); 
  }
- 
  
  void displaySpargeLCD()
  {
@@ -91,13 +90,20 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   
   lcd.setCursor(0,3);
   lcd.print("Goal:");
-  if(isBrewStage(strike) || isBrewStage(mash) || isBrewStage(sparge) || isBrewStage(mashout)) lcd.print(getHoldTemp());
+  if(isBrewStage(strike) || isBrewStage(mash) || isBrewStage(mashout)) lcd.print(getHoldTemp());
   else lcd.print("N/A");
   
   lcd.print(" Heat:");
   if(isHeaterOn())lcd.print("ON ");
   else lcd.print("OFF");
  }
+
+void displayDoughInLCD() {
+  lcd.setCursor(0,1);
+  lcd.print("Dough In Grains Now!");
+  lcd.setCursor(0,2);
+  lcd.print("Press Any Key When Done");
+}
  
 void displayAlarmMessage(char prompt[ ])
 {
@@ -198,10 +204,9 @@ void displayWortLCD()
   {
    case strike:lcd.print("Strike     ");break;
    case wort:lcd.print("Wort         ");break;
-   //case mash:lcd.print("Mash         "); break;
-   //case sparge:lcd.print("Sparge      "); break;
-   //case mashout:lcd.print("Mash Out      "); break;
-   //case emergencyShutoff:lcd.print("Shut Down!  "); break;
+   case mash:lcd.print("Mash         "); break;
+   case mashout:lcd.print("Mash Out      "); break;
+   case emergencyShutoff:lcd.print("Shut Down!  "); break;
    case complete:lcd.print("Complete   "); break;
   }
   

@@ -17,8 +17,7 @@ struct recipie{
  //last mash step temp is sparge conditions...so temp for sparge...ammount held in diff Variable
  int numberOfMashSteps;
  float mashTemps[maxMashes]; 
- boolean mashMotorStates[maxMashes];
- float mashAmmounts[maxMashes];
+ boolean mashPumpStates[maxMashes];
  unsigned int mashTimes[maxMashes];
  unsigned int wortTotalSecs;
  unsigned int hopAdditionIntervals[3];
@@ -42,11 +41,10 @@ struct recipie emptyRecipie()
  for(int i=0; i<maxMashes; i++)
  {
     blankR.mashTemps[i] = 0;
-    blankR.mashAmmounts[i] = 0;
     blankR.mashTimes[i] = 0;
-    blankR.mashMotorStates[i] = false;
+    blankR.mashPumpStates[i] = false;
  }
- blankR.wortTemp = 198.0;
+ blankR.wortTemp = 210.0;
  blankR.wortTotalSecs = 0;
  blankR.numOfHopSteps = 0;
  blankR.hopAdditionIntervals[0] = 0;
@@ -149,20 +147,13 @@ float getCurrentMashTemp()
 
 boolean moveToNextMashStep()
 {
+ currentMashStep++;
  if(currentMashStep == curRecipie.numberOfMashSteps-1)
   {
-   currentMashStep++;
    return false;
-  }else
-  {
-   currentMashStep++;
+  } else {
    return true; 
   }
-}
-
-float getMashAmmount(int i)
-{
- return curRecipie.mashAmmounts[i]; 
 }
 
 //function for holding strike temp for some time
@@ -176,24 +167,10 @@ unsigned int strikeHoldEndTime()
    return strikeHoldCounter; 
 }
 
-//function for Mash valve function
-boolean mashValveTimeDone()
-{  
-  //todo: add sensor value
 
-  return false;
-}
-
-//general valve timer
-boolean valveTimeDone(int totalSecs)
+boolean pumpIsOn()
 {
-return false;
-  //add sensor value
-}
-
-boolean motorIsOn()
-{
- return curRecipie.mashMotorStates[currentMashStep];
+ return curRecipie.mashPumpStates[currentMashStep];
 }
 
 float getCurrentMashTemp(int i)
@@ -288,22 +265,14 @@ void displayRecipieDebug()
    }
    Serial.println();
    
-   Serial.print("MashMotorStates:");
+   Serial.print("MashPumpStates:");
    for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
    {
-     Serial.print(curRecipie.mashMotorStates[i]);
+     Serial.print(curRecipie.mashPumpStates[i]);
      Serial.print(" ");
    }
    Serial.println();
-   
-   Serial.print("mashAmmounts:");
-   for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
-   {
-     Serial.print(curRecipie.mashAmmounts[i]);
-     Serial.print(" ");
-   }
-   Serial.println();
-   
+      
    Serial.print("mashTimes:");
    for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
    {

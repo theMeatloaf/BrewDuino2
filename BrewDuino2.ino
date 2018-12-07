@@ -2,15 +2,15 @@
 extern const int outlet1, HLTTemp;
 
 //define brew cases...arbitrary
-extern const int mash = 1;
-extern const int wort = 2;
-extern const int strike = 0;
-extern const int sparge = 3;
+extern const int mash = 2;
+extern const int doughin = 1;
 extern const int mashout = 4;
+extern const int wort = 3;
+extern const int strike = 0;
 extern const int emergencyShutoff = 5;
 extern const int complete = 6;
 
-#define STRIKE_HOLD_TIME 600 //seconds to hold strike after temp been reached...
+#define STRIKE_HOLD_TIME 1 //seconds to hold strike after temp been reached...
 
 //most important flag!
 extern boolean readyToBrew = false;
@@ -31,13 +31,11 @@ void setup() {
   //boot up screen display
   displayBootScreen();
   
-  turnOnMultiHold();
   while(!readyToBrew)
   {
     //say in here unless its really ready to brew!
     inputRecipieLoop();
   }
-  turnOffMultiHold();
   
   displayRecipieDebug();
       
@@ -62,21 +60,25 @@ void loop() {
   }
   
   //check for input here and change display case acordingly...also check for emergency
-  int ButtonValue = Buttonloop();
+  int ButtonValue = Buttonloop(false,false);
   if(ButtonValue==3 || ButtonValue==4)
-  {   
-    changeScreens();
-    last = 0;
+  { 
+    if (displayOption != -1) {
+      //we're not in a hold we can move along
+      changeScreens();
+      last = 0;
+    
+      if(ButtonValue == 3)displayOption--;
+      else if(ButtonValue==4)
+        displayOption++;
+  
+      //wrap around logic
+      if(displayOption==4)
+        displayOption = 0;
+      if(displayOption==-1)
+        displayOption = 3;
+    }
 
-    if(ButtonValue == 3)displayOption--;
-    else if(ButtonValue==4)
-      displayOption++;
-
-    //wrap around logic
-    if(displayOption==4)
-      displayOption = 0;
-    if(displayOption==-1)
-      displayOption = 3;
   }
   
   switch(brewStage)
@@ -92,17 +94,17 @@ void loop() {
         //mashCase();
         break;
       }
+
+    case doughin:
+      {
+        doughinCase();
+        break;
+      }
   
     case mashout:
       {
         //mashoutCase();
         break;
-      }
-  
-    case sparge:
-      {
-        //spargeCase();
-        break; 
       }
   
     case wort:
@@ -144,6 +146,11 @@ void loop() {
         case 3:
           displayOverallLCD();
           break;
+
+        default:
+          //do nothing...
+          //we are likely in a hold case
+          break;
         }
         last = getAllElapsed();
       }
@@ -160,7 +167,7 @@ void emergencyShutdownCase()
 void strikeCase()
 {
   //setup if just got here
-  if(getHoldTemp() != getCurrentMashTemp())SetupHoldTemp(outlet1,getCurrentMashTemp(),4294967294);
+  if(getHoldTemp() != getCurrentMashTemp())SetupHoldTemp(outlet1,getCurrentMashTemp(),4294967295);
   
   HoldTempDone(HLTTemp);
 
@@ -170,7 +177,7 @@ void strikeCase()
      if(getElapsed() > strikeHoldEndTime())
      {
        //been holding long enough...lets sound alarm and setup next temp
-       soundAlarm(true,wort,"Strike Temp Reached!");
+       soundAlarm(true,doughin,"Strike Temp Reached!");
      } 
   }else if((getTempF(getTempNew(HLTTemp)) > (getHoldTemp()-10)) && getLastDismissedAlarmCount()==0 )
   {
@@ -178,6 +185,21 @@ void strikeCase()
   }else if(getTempF(getTempNew(HLTTemp)) > getHoldTemp())
   {
         setupStrikeHoldTime(STRIKE_HOLD_TIME); //lets wait for some Time for good measure 
+  }
+}
+
+//*********DOUGHIN CASE BEGINS HERE*********//
+void doughinCase()
+{
+  turnHeaterOff();
+  displayOption = -1;
+  displayDoughInLCD();
+
+  if(ButtonLoopLongPress(4))
+  {
+    //time to Move to Mash
+    brewStage = mash;
+    displayOption = 1;
   }
 }
 
@@ -229,7 +251,7 @@ void soundAlarm(boolean tempHold, int nextCase, char message[ ])
    turnAlarmOn();
    if(tempHold)forceHoldTemp(HLTTemp);else turnHeaterOff();
    displayAlarmMessage(message);
-   int ButtonValue = Buttonloop();
+   int ButtonValue = Buttonloop(false,false);
    if(ButtonValue != -1)
    {
       //do Case Based Increases...
