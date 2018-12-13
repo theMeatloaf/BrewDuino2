@@ -87,7 +87,7 @@ boolean emergencyShutdown()
 
 
 bool ButtonLoopLongPress(int buttonID) {
-  if (Buttonloop(true,false) == buttonID && holdCounter>150) {
+  if (Buttonloop(true,false) == buttonID && holdCounter>10) {
     return true;
   }
   return false;
@@ -133,7 +133,7 @@ int ButtonloopRaw() {
     if(buttonStateUp == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed up");
+       //Serial.println("Pressed up");
        return 1;
      }
   }
@@ -143,7 +143,7 @@ int ButtonloopRaw() {
     if(buttonStateDown == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Down");
+       //Serial.println("Pressed Down");
        return 2;
      }
   }
@@ -153,7 +153,7 @@ int ButtonloopRaw() {
     if(buttonStateLeft == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Left");
+       //Serial.println("Pressed Left");
        return 3;
     }
   }
@@ -163,8 +163,8 @@ int ButtonloopRaw() {
     if(buttonStateRight == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Right");
-        return  4;
+       //Serial.println("Pressed Right");
+       return  4;
      }
   }
  
@@ -194,7 +194,6 @@ int Buttonloop(bool repeat,bool recipie)
    holdCounter++;
    if(holdCounter == 1)
    {
-    //Serial.print("Value Output!");
     return curButtValue; 
    }
    if(holdCounter>75)

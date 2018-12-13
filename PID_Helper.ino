@@ -1,7 +1,6 @@
 //All Temp and Time Holder Variables:
  static unsigned int elapSecs, lastSec, finalSecs, thisSec, totalElapSecs;
  static int displayHours, displayMins, displaySecs, controlPin, displayHoursF, displayMinsF, displaySecsF;
- static double temp;
  
  //inport golbal vars
  extern DeviceAddress spargeTherm, mashTherm, wortTherm; 
@@ -9,7 +8,7 @@
 
 void SetupHoldTemp(int inputPin, double tempy, unsigned int totalSecs)
 {
-  temp = tempy;
+  holdTemp = tempy;
   controlPin = inputPin;
 
   displayHoursF = (int)totalSecs/60/60;
@@ -27,7 +26,7 @@ void SetupHoldTemp(int inputPin, double tempy, unsigned int totalSecs)
 
 void SetupHoldTemp(int inputPin, double tempy, unsigned int hours, unsigned int mins, unsigned int secs)
 {
-  temp = tempy;
+  holdTemp = tempy;
   controlPin = inputPin;
   
   displayHoursF = hours;
@@ -52,7 +51,7 @@ void forceHoldTemp(int vessel)
       lastSec = thisSec;//increment last
       totalElapSecs++;
     }
-    PIDLoop(temp, controlPin, vessel);//hold temp at F temp
+    PIDLoop(controlPin, vessel);//hold temp at F temp
 }
 
 boolean HoldTempDone(int vessel)
@@ -66,7 +65,7 @@ boolean HoldTempDone(int vessel)
       elapSecs++;
       totalElapSecs++;
     }
-    PIDLoop(temp, controlPin, vessel);//hold temp at F temp
+    PIDLoop(controlPin, vessel);//hold temp at F temp
     return false;
   }else
   {
@@ -167,4 +166,3 @@ void displayTimeAndTemp()
   
       tempControllerPrint();
 }
-

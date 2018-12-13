@@ -1,5 +1,5 @@
 #include <DallasTemperature.h>
-extern const int outlet1, HLTTemp;
+extern const int outlet1, HLTTemp, pumpRelay;
 
 //define brew cases...arbitrary
 extern const int mash = 2;
@@ -10,7 +10,7 @@ extern const int strike = 0;
 extern const int emergencyShutoff = 5;
 extern const int complete = 6;
 
-#define STRIKE_HOLD_TIME 1 //seconds to hold strike after temp been reached...
+#define STRIKE_HOLD_TIME 10 //seconds to hold strike after temp been reached...
 
 //most important flag!
 extern boolean readyToBrew = false;
@@ -91,7 +91,7 @@ void loop() {
   
     case mash:
       {
-        //mashCase();
+        mashCase();
         break;
       }
 
@@ -103,7 +103,7 @@ void loop() {
   
     case mashout:
       {
-        //mashoutCase();
+        mashoutCase();
         break;
       }
   
@@ -177,7 +177,12 @@ void strikeCase()
      if(getElapsed() > strikeHoldEndTime())
      {
        //been holding long enough...lets sound alarm and setup next temp
-       soundAlarm(true,doughin,"Strike Temp Reached!");
+       int nextState = doughin;
+       if (getNumberOfMashSteps() <= 1) {
+          nextState = wort;
+          displayOption = 2;
+       }
+       soundAlarm(true,nextState,"Strike Temp Reached!");
      } 
   }else if((getTempF(getTempNew(HLTTemp)) > (getHoldTemp()-10)) && getLastDismissedAlarmCount()==0 )
   {
@@ -191,15 +196,88 @@ void strikeCase()
 //*********DOUGHIN CASE BEGINS HERE*********//
 void doughinCase()
 {
-  turnHeaterOff();
+  //setup temp to zero to ensure it stays off while we do this
+  if(getHoldTemp() != 0) {
+    changeScreens();
+    SetupHoldTemp(outlet1,0,4294967295);
+  }
+  HoldTempDone(HLTTemp);
+
   displayOption = -1;
   displayDoughInLCD();
 
   if(ButtonLoopLongPress(4))
   {
     //time to Move to Mash
-    brewStage = mash;
     displayOption = 1;
+    changeScreens();
+    if(moveToNextMashStep())
+    {
+      setupMashCase();
+      brewStage = mash;
+    }
+  }
+}
+
+//*********MASH CASE BEGINS HERE*********//
+void mashCase() {
+   if (HoldTempDone(HLTTemp))
+   {
+      //we're done holding mash time...
+      //do we have more?
+      if(moveToNextMashStep()) {
+        //we do lets just set it up and keep in the mash
+        setupMashCase();
+      }
+      else if (getLastDismissedAlarmCount()<1) 
+      {
+        //let the user know the mash is over with sound
+        soundAlarm(true,mash,"Mash Complete!");
+      } else {
+        //move to mashout
+        brewStage = mashout;
+      }
+   }
+}
+
+void setupMashCase()
+{  
+  //setup next mashStep temp control
+  SetupHoldTemp(outlet1,getCurrentMashTemp(),getCurrentMashTime()); 
+
+  //reset alarm for good measure
+  resetAlarmCount();
+
+  //turn on/off motor
+  if(pumpIsOn())
+  {
+    digitalWrite(pumpRelay,HIGH);
+  }
+  else
+  {
+    digitalWrite(pumpRelay,LOW); 
+  }
+  last = 0; 
+}
+
+//***************MASHOUT CASE BEGINS HERE**************//
+void mashoutCase() {
+   //setup temp to zero to ensure it stays off while we do this
+  if(getHoldTemp() != 0) {
+    changeScreens();
+    SetupHoldTemp(outlet1,0,4294967295);
+  }
+  HoldTempDone(HLTTemp);
+
+  displayOption = -1;
+  displayMashOutInLCD();
+
+  if(ButtonLoopLongPress(4))
+  {
+    //time to Move to Wort
+    displayOption = 2;
+    changeScreens();
+    brewStage = wort;
   }
 }
 
@@ -208,7 +286,8 @@ void wortCase()
 {   
       if(getHoldTemp() != wortGoalTemp())
       {
-        //setup wort stuff if Just got here
+        //setup wort stuff if Just got here...including new PID vals
+        setTempControlForBoil();
         SetupHoldTemp(outlet1,wortGoalTemp(),wortTotalTime());
         resetAlarmCount();
       }
@@ -218,7 +297,7 @@ void wortCase()
        //check if its getting close so we can tell the user to pour in extract/turn off stove
        if(getTempF(getTempNew(HLTTemp)) > getHoldTemp()-5 && getLastDismissedAlarmCount()<1)
        {
-        soundAlarm(true,wort,"Turn Off Stove/Pour In Excract"); 
+        soundAlarm(true,wort,"Turn Off Stove/Pour In Excract");
        }
         
        // keep trying to hold temp and dont do anything else

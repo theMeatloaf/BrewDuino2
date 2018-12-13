@@ -1,4 +1,5 @@
 extern const int outlet1     = 6;
+extern const int pumpRelay   = 7;
 extern const int lcdP1       = 8;
 extern const int lcdP2       = 9;
 extern const int lcdP3       = 10;
@@ -14,6 +15,7 @@ extern const int alarm       = 4;
 void setupPins()
 {
   pinMode(outlet1, OUTPUT);
+  pinMode(pumpRelay,OUTPUT);
   pinMode(alarm, OUTPUT);
   pinMode(buttonRight, INPUT);
   pinMode(buttonLeft, INPUT);

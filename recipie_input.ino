@@ -659,7 +659,7 @@ void screenDone()
              tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
-             if(curDisplayedMashStep == inputRecipie.numberOfMashSteps)
+             if(curDisplayedMashStep == inputRecipie.numberOfMashSteps - 1)
              {
               tempMoreMashSteps = false; 
              }else {
@@ -671,9 +671,6 @@ void screenDone()
              //newMashStep
              tempMoreMashSteps = false;
              curDisplayedMashStep++;
-             tempMoreMashSteps = 0;
-             inputRecipie.numberOfMashSteps++;
-         
              tempMashTemp = 0;
              tempMashPumpOn = false;
              tempMashHours = 0;
@@ -683,6 +680,12 @@ void screenDone()
        }else
        {
           //go to wort screen
+          //save total mash steps
+          inputRecipie.numberOfMashSteps = curDisplayedMashStep+1;
+          //handle case where they dont want a mash
+          if (inputRecipie.numberOfMashSteps == 2 && inputRecipie.mashTimes[curDisplayedMashStep] == 0) {
+            inputRecipie.numberOfMashSteps--;
+          }
           tempMoreMashSteps = false;
           //go to Wort Screen....fill in times, temps, and hop times if they are there
           tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);

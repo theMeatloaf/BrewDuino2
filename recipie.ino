@@ -44,7 +44,7 @@ struct recipie emptyRecipie()
     blankR.mashTimes[i] = 0;
     blankR.mashPumpStates[i] = false;
  }
- blankR.wortTemp = 210.0;
+ blankR.wortTemp = 211.0;
  blankR.wortTotalSecs = 0;
  blankR.numOfHopSteps = 0;
  blankR.hopAdditionIntervals[0] = 0;
@@ -147,11 +147,11 @@ float getCurrentMashTemp()
 
 boolean moveToNextMashStep()
 {
- currentMashStep++;
  if(currentMashStep == curRecipie.numberOfMashSteps-1)
   {
    return false;
   } else {
+   currentMashStep++;
    return true; 
   }
 }
@@ -303,4 +303,3 @@ void displayRecipieDebug()
    Serial.println();
   
 }
-

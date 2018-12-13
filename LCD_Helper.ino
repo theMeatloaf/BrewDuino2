@@ -98,11 +98,27 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   else lcd.print("OFF");
  }
 
-void displayDoughInLCD() {
+
+void displayMashOutInLCD() {
+  lcd.setCursor(0,0);
+  lcd.print("********************");
   lcd.setCursor(0,1);
-  lcd.print("Dough In Grains Now!");
+  lcd.print("Remove Grains");
   lcd.setCursor(0,2);
-  lcd.print("Press Any Key When Done");
+  lcd.print("Hold Right When Done");
+  lcd.setCursor(0,3);
+  lcd.print("********************");
+}
+
+void displayDoughInLCD() {
+  lcd.setCursor(0,0);
+  lcd.print("********************");
+  lcd.setCursor(0,1);
+  lcd.print("Dough In Grains");
+  lcd.setCursor(0,2);
+  lcd.print("Hold Right When Done");
+  lcd.setCursor(0,3);
+  lcd.print("********************");
 }
  
 void displayAlarmMessage(char prompt[ ])
@@ -117,8 +133,51 @@ void displayAlarmMessage(char prompt[ ])
 
 void displayMashLCD()
 {
- lcd.setCursor(0,0);
- lcd.print("mash placeHolder!?"); 
+  lcd.setCursor(7,0);
+  lcd.print("*MASH*");
+  
+   lcd.setCursor(1,1);
+  if(getCurrentMashStep()>0 && currentBrewStage()==mash)
+  {
+    if(getDisplayHours()<10)lcd.print("0");
+    lcd.print(getDisplayHours());
+    lcd.print(":");
+    if(getDisplayMins()<10)lcd.print("0");
+    lcd.print(getDisplayMins());
+    lcd.print(":");
+    if(getDisplaySecs()<10)lcd.print("0");
+    lcd.print(getDisplaySecs());
+      
+    lcd.print("/");
+    
+    if(getFinalHours()<10)lcd.print("0");
+    lcd.print(getFinalHours());
+    lcd.print(":");
+    if(getFinalMins()<10)lcd.print("0");
+    lcd.print(getFinalMins());
+    lcd.print(":");
+    if(getFinalSecs()<10)lcd.print("0");  
+    lcd.print(getFinalSecs());
+  }else
+  {
+  lcd.print("00:00:00/00:00:00"); 
+  }
+  
+  lcd.setCursor(0,2);
+  lcd.print("Cur:");
+  lcd.print(getTempF(getTempNew(HLTTemp)));
+  lcd.print("Set:");
+  lcd.print(getCurrentMashTemp());
+  
+  lcd.setCursor(0,3);
+  lcd.print("Pump:");
+  if(pumpIsOn())lcd.print("ON ");
+  else lcd.print("OFF ");
+  lcd.print("step ");
+  if(currentBrewStage()==mash) lcd.print(getCurrentMashStep());
+  else lcd.print("N/A");
+  lcd.print("/");
+  lcd.print(getNumberOfMashSteps()-1);
 }
  
  

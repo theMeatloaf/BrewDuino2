@@ -1,17 +1,13 @@
 #include <PID_v1.h>
 
 double holdTemp, Input, Output;
-const int numReadings = 30;
-double readings[numReadings]; // the readings from the analog input
 int index = 0; // the index of the current reading
-double total = 0; // the running total
-double input = 0; // the average
 
 //Specify the links and initial tuning parameters
-PID myPID(&Input, &Output, &holdTemp,40,10,1, DIRECT);
+PID myPID(&Input, &Output, &holdTemp,172.12,0.14,0,DIRECT);
 
 //size for Duty Cycle
-int WindowSize = 2000;
+int WindowSize = 1000;
 unsigned long windowStartTime;
 
 void startTempControl()
@@ -28,13 +24,14 @@ void startTempControl()
 
  //turn the PID on
  myPID.SetMode(AUTOMATIC);
+}
 
+void setTempControlForBoil() {
+  myPID.SetTunings(452.71, 4.86, 0.0);
 }
 
 
-void PIDLoop(double temp,int pin,int vessel) {
-   holdTemp = temp;
-  
+void PIDLoop(int pin,int vessel) {  
    float fTemp = getTempF(getTempNew(vessel));   
 
    if(!tempIsValid(fTemp))
@@ -43,21 +40,8 @@ void PIDLoop(double temp,int pin,int vessel) {
       digitalWrite(pin,LOW);
       return;
    }
-
-    total= total - readings[index]; 
-    float temperature = fTemp;
-    readings[index] = temperature;
-    total= total + readings[index]; 
     
-    index = index + 1; 
-    
-    // if we're at the end of the array...
-    if (index >= numReadings) 
-    // ...wrap around to the beginning:
-    index = 0;
-    
-    // calculate the average:
-    Input = total / numReadings; 
+    Input = fTemp; 
 
     myPID.Compute();
   
@@ -67,7 +51,7 @@ void PIDLoop(double temp,int pin,int vessel) {
       //time to shift the Relay Window
       windowStartTime += WindowSize;
     }
-    if(Output > now - windowStartTime)
+    if(Output >= now - windowStartTime)
     { 
       digitalWrite(pin,HIGH);
     }
