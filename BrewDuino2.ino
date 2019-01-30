@@ -10,7 +10,7 @@ extern const int strike = 0;
 extern const int emergencyShutoff = 5;
 extern const int complete = 6;
 
-#define STRIKE_HOLD_TIME 10 //seconds to hold strike after temp been reached...
+#define STRIKE_HOLD_TIME 0 //seconds to hold strike after temp been reached...
 
 //most important flag!
 extern boolean readyToBrew = false;
@@ -234,8 +234,11 @@ void mashCase() {
         //let the user know the mash is over with sound
         soundAlarm(true,mash,"Mash Complete!");
       } else {
-        //move to mashout
-        brewStage = mashout;
+        int ButtonValue = Buttonloop(true,false);
+        if (ButtonValue == -1) {
+              //move to mashout if they aren't pressing anything anymore
+              brewStage = mashout;
+        }
       }
    }
 }
@@ -261,7 +264,7 @@ void setupMashCase()
 }
 
 //***************MASHOUT CASE BEGINS HERE**************//
-void mashoutCase() {
+void mashoutCase() {  
    //setup temp to zero to ensure it stays off while we do this
   if(getHoldTemp() != 0) {
     changeScreens();

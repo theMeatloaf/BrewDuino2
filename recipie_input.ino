@@ -636,7 +636,7 @@ void screenDone()
        tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
        tempMashPumpOn = inputRecipie.mashPumpStates[curDisplayedMashStep];
        currentScreen = mashScreen;
-       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep)tempMoreMashSteps = true;
+       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep + 1)tempMoreMashSteps = true;
        lcd.clear();
        break;
    }
